@@ -1,1 +1,0 @@
-<view class="card data-v-9db7f6f8"><slot name="title"></slot><slot name="value"></slot></view>
