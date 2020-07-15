@@ -94,7 +94,7 @@
 				// console.log(this.cameraState)
 			},
 			intervalSet(){
-				let space = 5000
+				let space = 1000
 				let camera = wx.createCameraContext()
 				camera.startRecord({
 					success: (res) => {
