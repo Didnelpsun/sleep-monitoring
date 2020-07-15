@@ -36,9 +36,10 @@
 			return {
 				title: '点击图案开始录像',
 				open: false,
-				// time: '00:00:00',
-				time: 0,
+				time: '00:00:00',
+				// time: 0,
 				interval: null,
+				timeout: null,
 				frame: 'small',
 				cameraState: false,
 				flashState: 'off',
@@ -83,78 +84,62 @@
 			},
 			monitor(){
 				// console.log(this.cameraState)
-				let camera = wx.createCameraContext()
 				this.cameraState = !this.cameraState
 				if(this.cameraState === true){
-					camera.startRecord({
-						success: (res) => {
-							console.log('开启成功')
-							this.intervalSet()
-							console.log(res)
-						},
-						fail: (error) => {
-							console.log('开启失败')
-							console.log(error)
-						},
-						timeoutCallback: (res) => {
-							this.cameraState = false
-							this.intervalSet()
-							console.log(res)
-						}
-					})
+					this.intervalSet()
 				}
 				else if(this.cameraState === false){
-					camera.stopRecord({
-						success: (res) => {
-							console.log('结束成功')
-							console.log(res)
-						},
-						fail: (error) => {
-							console.log('结束失败')
-							console.log(error)
-						},
-						complete: (res) => {
-							this.intervalSet()
-						}
-					})
+					this.clear()
 				}
 				// console.log(this.cameraState)
 			},
-			flash(){
-				switch (this.flashState) {
-					case 'off':
-						this.flashState = 'on'
-						this.flashImg = '/static/image/flash_on.png'
-						break
-					case 'on':
-						this.flashState = 'auto'
-						this.flashImg = '/static/image/flash_auto.png'
-						break
-					case 'auto':
-						this.flashState = 'torch'
-						this.flashImg = '/static/image/flash_torch.png'
-						break
-					case 'torch':
-						this.flashState = 'off'
-						this.flashImg = '/static/image/flash_off.png'
-						break
-				}
-				// console.log(this.flashState)
-			},
-			device(){
-				this.deviceState = this.deviceState === 'front'?'back':'front'
-				// console.log(this.deviceState)
-			},
 			intervalSet(){
-				if(this.interval!=null){
-					clearInterval(this.interval)
-					this.interval = null
-					this.time = 0
-				}
-				else{
-					this.interval = setInterval(()=>{
-						this.time+=1
-					}),1000
+				let space = 1000
+				let camera = wx.createCameraContext()
+				camera.startRecord({
+					success: (res) => {
+						console.log('开启成功')
+					},
+					fail: (error) => {
+						console.log('开启失败')
+						console.log(error)
+					}
+				})
+				if(this.interval === null){
+					this.timeout = setTimeout(
+						()=>{
+							this.interval = setInterval(()=>{
+								camera.stopRecord({
+									success: (res) => {
+										// console.log('结束成功')
+										console.log(res)
+									},
+									fail: (error) => {
+										console.log('结束失败')
+										console.log(error)
+										this.clear()
+									}
+								})
+								camera.startRecord({
+									success: (res) => {
+										// console.log('开启成功')
+										this.intervalSet()
+										// console.log(res)
+									},
+									fail: (error) => {
+										console.log('开启失败')
+										console.log(error)
+										this.clear()
+									},
+									timeoutCallback: (res) => {
+										console.log('超时')
+										this.clear()
+									}
+								})
+								this.timeAdd(this.time)
+							},space)
+						}
+					,space)
 				}
 			},
 			timeAdd(){
@@ -185,6 +170,38 @@
 						return n.toString()
 				}
 				this.time = two(hour)+":"+two(minute)+":"+two(second)
+			},
+			clear(){
+				clearInterval(this.interval)
+				this.interval = null
+				this.cameraState = false
+				this.time = '00:00:00'
+				console.log('结束')
+			},
+			flash(){
+				switch (this.flashState) {
+					case 'off':
+						this.flashState = 'on'
+						this.flashImg = '/static/image/flash_on.png'
+						break
+					case 'on':
+						this.flashState = 'auto'
+						this.flashImg = '/static/image/flash_auto.png'
+						break
+					case 'auto':
+						this.flashState = 'torch'
+						this.flashImg = '/static/image/flash_torch.png'
+						break
+					case 'torch':
+						this.flashState = 'off'
+						this.flashImg = '/static/image/flash_off.png'
+						break
+				}
+				// console.log(this.flashState)
+			},
+			device(){
+				this.deviceState = this.deviceState === 'front'?'back':'front'
+				// console.log(this.deviceState)
 			}
 		},
 		computed:{
