@@ -17,7 +17,7 @@
 			 :device-position="deviceState" :frame-size="frame"
 			  :binderror="error" :bindstop="stop"></camera>
 			 <view class="bottomView c">
-				<text style="color: white;margin-bottom: 10px;">{{time}}</text> 
+				<text style="color: white;margin-bottom: 10px;">{{timeString}}</text> 
 				<view class="buttonView r">
 					<image class="cameraImg" :src="flashImg" @click="flash"></image>
 					<view class="monitorView c" @click="monitor">
@@ -36,7 +36,7 @@
 			return {
 				title: '点击图案开始录像',
 				open: false,
-				time: '00:00:00',
+				timeString: '00:00:00',
 				// time: 0,
 				interval: null,
 				timeout: null,
@@ -137,14 +137,14 @@
 										this.clear()
 									}
 								})
-								this.timeAdd(this.time)
+								this.timeAdd(this.timeString)
 							},space)
 						}
 					,space)
 				}
 			},
 			timeAdd(){
-				let [hour,minute,second] = this.time.split(':')
+				let [hour,minute,second] = this.timeString.split(':')
 				hour = parseInt(hour)
 				minute = parseInt(minute)
 				second = parseInt(second)
@@ -170,13 +170,13 @@
 					else
 						return n.toString()
 				}
-				this.time = two(hour)+":"+two(minute)+":"+two(second)
+				this.timeString = two(hour)+":"+two(minute)+":"+two(second)
 			},
 			clear(){
 				clearInterval(this.interval)
 				this.interval = null
 				this.cameraState = false
-				this.time = '00:00:00'
+				this.timeString = '00:00:00'
 				console.log('结束')
 			},
 			flash(){
