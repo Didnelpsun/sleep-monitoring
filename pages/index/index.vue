@@ -1,9 +1,9 @@
 <template>
 	<view class="c">
 		<view v-if="!open" class="c">
-			<view class="img c" @click="open=!open">
+			<button class="img c" @click="openCamera" open-type="getUserInfo">
 				<image class="logo" src="/static/image/video.png"></image>
-			</view>
+			</button>
 			<view>
 				<text class="title">{{title}}</text>
 			</view>
@@ -42,6 +42,49 @@
 			})
 		},
 		methods: {
+			openCamera(){
+				let that = this
+				let check = (res, url)=>{
+					if(!res){
+						console.log(res)
+						wx.authorize({
+							scope:url,
+							success(){
+								return true
+							},
+							fail(){
+								console.log(res)
+								return false
+							}
+						})
+					}
+					else{
+						return true
+					}
+				}
+				let model = ()=>{
+					uni.showModel({
+						title:'未授权',
+						content: '无法打开摄像机'
+					})
+				}
+				wx.getSetting({
+					success(res) {
+						if(check(res.authSetting['scope.record'], 'scope.record')&
+						check(res.authSetting['scope.camera'], 'scope.camera')&
+						check(res.authSetting['scope.writePhotosAlbum'], 'scope.writePhotosAlbum')){
+							that.open = true
+						}
+						else{
+							model()
+						}
+					},
+					fail(err){
+						console.log(err)
+						model()
+					}
+				})
+			},
 		}
 	}
 </script>

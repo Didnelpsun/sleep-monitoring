@@ -21,6 +21,7 @@
 </template>
 
 <script>
+	import { postVideo } from '../../api/api.js'
 	export default {
 		data() {
 			return {
@@ -71,6 +72,7 @@
 				}
 			},
 			monitor(){
+				// 点击控制
 				// console.log(this.cameraState)
 				this.cameraState = !this.cameraState
 				if(this.cameraState === true){
@@ -79,11 +81,11 @@
 				else if(this.cameraState === false){
 					this.clear()
 				}
-				// console.log(this.cameraState)
 			},
 			intervalSet(){
 				let space = 1000
 				let camera = wx.createCameraContext()
+				let that = this
 				camera.startRecord({
 					success: (res) => {
 						console.log('开启成功')
@@ -91,7 +93,7 @@
 					fail: (error) => {
 						console.log('开启失败')
 						console.log(error)
-						this.clear()
+						that.clear()
 					}
 				})
 				if(this.interval === null){
@@ -100,36 +102,63 @@
 							this.interval = setInterval(()=>{
 								camera.stopRecord({
 									success: (res) => {
-										// console.log('结束成功')
+										// 相机关闭就开始传输
+										that.post(res)
 										console.log(res)
 									},
 									fail: (error) => {
 										console.log('结束失败')
 										console.log(error)
-										this.clear()
+										that.clear()
 									}
 								})
 								camera.startRecord({
 									success: (res) => {
 										// console.log('开启成功')
-										this.intervalSet()
+										that.intervalSet()
 										// console.log(res)
 									},
 									fail: (error) => {
 										console.log('开启失败')
 										console.log(error)
-										this.clear()
+										that.clear()
 									},
 									timeoutCallback: (res) => {
 										console.log('超时')
-										this.clear()
+										that.clear()
 									}
 								})
-								this.timeAdd(this.timeString)
+								that.timeAdd(that.timeString)
 							},space)
 						}
 					,space)
 				}
+			},
+			post(obj){
+				let that = this
+				// console.log(postVideo)
+				uni.request({
+					url: postVideo,
+					method: 'POST',
+					data: {
+						tempVideoPath: obj.tempVideoPath
+					},
+					success(res){
+						if(res.data!=='success')
+							that.clear()
+					},
+					fail() {
+						console.log('传输错误')
+						try{
+							that.$nextTick(function(){
+								that.clear()
+							})
+						}
+						catch(error){
+							console.log(error)
+						}
+					}
+				})
 			},
 			timeAdd(){
 				let [hour,minute,second] = this.timeString.split(':')
