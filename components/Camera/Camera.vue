@@ -78,7 +78,7 @@
 				if(this.cameraState === true){
 					this.intervalSet()
 				}
-				else if(this.cameraState === false){
+				else{
 					this.clear()
 				}
 			},
@@ -89,6 +89,7 @@
 				camera.startRecord({
 					success: (res) => {
 						console.log('开启成功')
+						loop()
 					},
 					fail: (error) => {
 						console.log('开启失败')
@@ -96,42 +97,46 @@
 						that.clear()
 					}
 				})
-				if(this.interval === null){
-					this.timeout = setTimeout(
-						()=>{
-							this.interval = setInterval(()=>{
-								camera.stopRecord({
-									success: (res) => {
-										// 相机关闭就开始传输
-										that.post(res)
-										console.log(res)
-									},
-									fail: (error) => {
-										console.log('结束失败')
-										console.log(error)
-										that.clear()
-									}
-								})
-								camera.startRecord({
-									success: (res) => {
-										// console.log('开启成功')
-										that.intervalSet()
-										// console.log(res)
-									},
-									fail: (error) => {
-										console.log('开启失败')
-										console.log(error)
-										that.clear()
-									},
-									timeoutCallback: (res) => {
-										console.log('超时')
-										that.clear()
-									}
-								})
-								that.timeAdd(that.timeString)
-							},space)
-						}
-					,space)
+				let loop=()=>{
+					if(that.cameraState === true){
+						that.timeout = setTimeout(
+							()=>{
+								that.interval = setInterval(()=>{
+									camera.stopRecord({
+										success: (res) => {
+											// 相机关闭就开始传输
+											that.post(res)
+											console.log(res)
+										},
+										fail: (error) => {
+											console.log('结束失败')
+											console.log(error)
+											that.clear()
+										}
+									})
+									camera.startRecord({
+										success: (res) => {
+											// console.log('开启成功')
+											that.intervalSet()
+											// console.log(res)
+										},
+										fail: (error) => {
+											console.log('开启失败')
+											console.log(error)
+											that.clear()
+										},
+										timeoutCallback: (res) => {
+											console.log('超时')
+											that.clear()
+										}
+									})
+									that.timeAdd(that.timeString)
+								},space)
+							}
+						,space)
+					}else{
+						this.clear()
+					}
 				}
 			},
 			post(obj){
